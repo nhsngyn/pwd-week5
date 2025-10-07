@@ -13,3 +13,5 @@ module.exports = function errorHandler(err, req, res, next) {
 
   res.status(status).json(payload);
 };
+module.exports = notFound; 
+
