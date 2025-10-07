@@ -6,11 +6,13 @@ const createApp = require('../src/app');
 
 describe('Restaurant routes', () => {
   let app;
+  let server;
 
-  // 1. 모든 테스트 시작 전 DB에 연결하고 앱을 생성합니다.
+  // 1. 모든 테스트 시작 전 DB에 연결하고 앱과 서버를 실행합니다.
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGODB_URI);
     app = createApp();
+    server = app.listen(4000);
   });
 
   // 2. 각 테스트가 끝난 후 DB를 깨끗하게 비웁니다.
@@ -18,13 +20,14 @@ describe('Restaurant routes', () => {
     await Restaurant.deleteMany({});
   });
 
-  // 3. 모든 테스트가 끝난 후 DB 연결을 끊습니다.
+  // 3. 모든 테스트가 끝난 후 DB 연결과 서버를 모두 닫습니다.
   afterAll(async () => {
     await mongoose.connection.close();
+    server.close();
   });
 
   test('GET /api/restaurants returns a list', async () => {
-    // given: 테스트를 위한 데이터를 먼저 생성
+    // given: 테스트를 위한 데이터를 먼저 생성합니다.
     await Restaurant.create({
       name: '테스트 식당',
       category: '한식',
@@ -32,10 +35,10 @@ describe('Restaurant routes', () => {
       rating: 5,
     });
 
-    // when: API를 호출
+    // when: API를 호출합니다.
     const response = await request(app).get('/api/restaurants');
 
-    // then: 결과를 검증
+    // then: 결과를 검증합니다.
     expect(response.status).toBe(200);
     expect(response.body.data).toBeInstanceOf(Array);
     expect(response.body.data.length).toBe(1);
@@ -117,4 +120,5 @@ describe('Restaurant routes', () => {
     expect(response.status).toBe(400);
     expect(response.body.error.message).toContain('category');
   });
+
 });

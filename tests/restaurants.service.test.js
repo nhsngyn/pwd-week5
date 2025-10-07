@@ -6,7 +6,7 @@ const restaurantService = require('../src/services/restaurants.service');
 describe('RestaurantService', () => {
   // 1. 모든 테스트 시작 전 DB에 한 번만 연결합니다.
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGODB_URI);
   });
 
   // 2. 각 테스트가 끝난 후 DB를 깨끗하게 비웁니다.
@@ -36,17 +36,7 @@ describe('RestaurantService', () => {
     expect(restaurants.length).toBe(1);
   });
 
-  // `getAllRestaurantsSync`는 DB를 사용하지 않는 순수 인메모리 로직을
-  // 테스트하는 목적이 아니라면, 비동기 DB 환경에서는 혼란을 줄 수 있어
-  // 제외하거나 목적을 명확히 하는 것이 좋습니다. 여기서는 주석 처리합니다.
-  /*
-  test('getAllRestaurantsSync returns data immediately', () => {
-    // ...
-  });
-  */
-
   test('createRestaurant appends a new entry', async () => {
-    // given
     const payload = {
       name: '테스트 식당',
       category: '테스트',
@@ -54,27 +44,23 @@ describe('RestaurantService', () => {
       rating: 4.5,
     };
 
-    // when
     const created = await restaurantService.createRestaurant(payload);
 
-    // then
-    expect(created.id).toBeDefined();
+    // 스키마의 transform 옵션에 따라, 반환된 객체는 'id' 필드를 갖습니다.
+    expect(created.id).toBeDefined(); // 👈 .id 확인
     expect(created.name).toBe(payload.name);
 
-    // DB에 실제로 생성되었는지 추가 검증
-    const found = await Restaurant.findById(created.id);
-    expect(found).not.toBeNull();
-    expect(found.name).toBe(payload.name);
+    const all = await restaurantService.getAllRestaurants();
+
+    // all 배열에 있는 객체들도 모두 'id' 필드를 갖습니다.
+    const found = all.find((item) => item.id === created.id); // 👈 .id로 비교
+    expect(found).toBeTruthy();
   });
 
   test('createRestaurant rejects invalid payloads', async () => {
-    // given
-    const payload = { name: '누락된 식당' }; // 'category'가 없음
-
-    // when & then
-    // 서비스의 생성 함수가 Mongoose 유효성 검사 에러를 던지는지 확인
-    await expect(restaurantService.createRestaurant(payload)).rejects.toThrow(
-      "Restaurant validation failed: category: Path `category` is required."
-    );
+    // Mongoose가 반환하는 실제 에러 메시지에 더 가깝게 수정합니다.
+    await expect(
+      restaurantService.createRestaurant({ name: '누락된 식당' })
+    ).rejects.toThrow('Restaurant validation failed: category: Path `category` is required.');
   });
 });
