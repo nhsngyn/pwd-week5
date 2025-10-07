@@ -10,7 +10,7 @@ router.get('/popular', restaurantsController.getPopularRestaurants);
 router.get('/', restaurantsController.getRestaurants);
 router.get('/:id', restaurantsController.getRestaurant);
 router.post('/', restaurantsController.createRestaurant);
-router.put('/:id', restaurantsController.updateRestaurant);
+router.put('/:restaurantId', restaurantsController.updateRestaurant);
 router.delete('/:id', restaurantsController.deleteRestaurant);
 
 module.exports = router;
