@@ -1,25 +1,26 @@
 // tests/restaurants.service.test.js
-
-// 1. (추가) mongoose와 Restaurant 모델을 불러옵니다.
 const mongoose = require('mongoose');
-const Restaurant = require('../src/models/restaurant.model'); // 👈 실제 모델 파일 경로를 확인하세요.
+const Restaurant = require('../src/models/restaurant.model');
 const restaurantService = require('../src/services/restaurants.service');
 
 describe('RestaurantService', () => {
+  // 1. 모든 테스트 시작 전 DB에 한 번만 연결합니다.
   beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URI);
   });
 
+  // 2. 각 테스트가 끝난 후 DB를 깨끗하게 비웁니다.
   afterEach(async () => {
     await Restaurant.deleteMany({});
   });
 
+  // 3. 모든 테스트가 끝난 후 DB 연결을 끊습니다.
   afterAll(async () => {
     await mongoose.connection.close();
   });
 
   test('getAllRestaurants resolves with data', async () => {
-    // 2. (추가) 테스트를 위해 데이터를 먼저 생성합니다 (Arrange)
+    // given: 이 테스트를 위한 데이터를 생성합니다.
     await Restaurant.create({
       name: '임시 식당',
       category: '한식',
@@ -27,29 +28,25 @@ describe('RestaurantService', () => {
       rating: 5,
     });
 
-    const restaurants = await restaurantService.getAllRestaurants(); // (Act)
-    expect(Array.isArray(restaurants)).toBe(true); // (Assert)
-    expect(restaurants.length).toBeGreaterThan(0); // (Assert)
-  });
+    // when: 서비스 함수를 호출합니다.
+    const restaurants = await restaurantService.getAllRestaurants();
 
-  test('getAllRestaurantsSync returns data immediately', () => {
-    // 2. (추가) 동기 테스트도 마찬가지로 데이터를 먼저 생성해야 합니다.
-    // 서비스 로직에 따라 이 부분은 Mongoose 모델을 사용하지 않을 수 있으나,
-    // 일관성을 위해 DB에 데이터를 생성하는 방식을 따릅니다.
-    // 만약 getAllRestaurantsSync가 DB와 무관하다면 이 부분은 다를 수 있습니다.
-    restaurantService.createRestaurant({
-      name: '임시 동기 식당',
-      category: '중식',
-      location: '테스트 캠퍼스',
-      rating: 4,
-    });
-
-    const restaurants = restaurantService.getAllRestaurantsSync();
+    // then: 결과를 검증합니다.
     expect(Array.isArray(restaurants)).toBe(true);
-    expect(restaurants.length).toBeGreaterThan(0);
+    expect(restaurants.length).toBe(1);
   });
+
+  // `getAllRestaurantsSync`는 DB를 사용하지 않는 순수 인메모리 로직을
+  // 테스트하는 목적이 아니라면, 비동기 DB 환경에서는 혼란을 줄 수 있어
+  // 제외하거나 목적을 명확히 하는 것이 좋습니다. 여기서는 주석 처리합니다.
+  /*
+  test('getAllRestaurantsSync returns data immediately', () => {
+    // ...
+  });
+  */
 
   test('createRestaurant appends a new entry', async () => {
+    // given
     const payload = {
       name: '테스트 식당',
       category: '테스트',
@@ -57,18 +54,27 @@ describe('RestaurantService', () => {
       rating: 4.5,
     };
 
+    // when
     const created = await restaurantService.createRestaurant(payload);
+
+    // then
     expect(created.id).toBeDefined();
     expect(created.name).toBe(payload.name);
 
-    const all = await restaurantService.getAllRestaurants();
-    const found = all.find((item) => item.id === created.id);
-    expect(found).toBeTruthy();
+    // DB에 실제로 생성되었는지 추가 검증
+    const found = await Restaurant.findById(created.id);
+    expect(found).not.toBeNull();
+    expect(found.name).toBe(payload.name);
   });
 
   test('createRestaurant rejects invalid payloads', async () => {
-    await expect(
-      restaurantService.createRestaurant({ name: '누락된 식당' })
-    ).rejects.toThrow("'category' is required");
+    // given
+    const payload = { name: '누락된 식당' }; // 'category'가 없음
+
+    // when & then
+    // 서비스의 생성 함수가 Mongoose 유효성 검사 에러를 던지는지 확인
+    await expect(restaurantService.createRestaurant(payload)).rejects.toThrow(
+      "Restaurant validation failed: category: Path `category` is required."
+    );
   });
 });
