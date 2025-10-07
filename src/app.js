@@ -1,9 +1,11 @@
 // src/app.js
 const express = require('express');
 const cors = require('cors');
-const restaurantsRouter = require('./routes/restaurants.routes.js');
+const restaurantsRouter = require('./routes/restaurants.routes');
+const submissionsRouter = require('./routes/submissions.routes');
 const notFound = require('./middleware/notFound.middleware');
 const errorHandler = require('./middleware/error.middleware');
+const mongoose = require('mongoose');
 
 function createApp() {
   const app = express();
@@ -12,17 +14,13 @@ function createApp() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-// 기본 경로(루트 경로)에 대한 라우터 추가
-app.get('/', (req, res) => {
-  res.send('Welcome to the PWD Week 4 Restaurant API!');
-});
-
-// 기존 헬스 체크 라우터
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+  app.get('/health', (req, res) => {
+    const state = mongoose.connection.readyState; // 0=disconnected,1=connected,2=connecting,3=disconnecting
+    res.json({ status: 'ok', db: state });
+  });
 
   app.use('/api/restaurants', restaurantsRouter);
+  app.use('/api/submissions', submissionsRouter);
 
   app.use(notFound);
   app.use(errorHandler);
