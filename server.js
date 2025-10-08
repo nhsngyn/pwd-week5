@@ -11,7 +11,7 @@ const app = createApp();
 async function start() {
   try {
     await connectDB(process.env.MONGODB_URI, process.env.DB_NAME);
-    await ensureSeededOnce();
+    // await ensureSeededOnce();
     if (require.main === module) {
       app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
     }
