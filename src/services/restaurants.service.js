@@ -5,19 +5,19 @@ const Restaurant = require('../models/restaurant.model');
 
 async function getAllRestaurants() {
   const docs = await Restaurant.find({});
-  // 각 문서에 transform을 적용하여 'id' 필드를 갖게 합니다.
-  return docs.map((doc) => doc.toObject());
+  // 👇 .map(doc => doc.toObject())를 추가하여 모든 문서에 transform을 적용합니다.
+  return docs.map(doc => doc.toObject());
+}
+
+async function createRestaurant(payload) {
+  const doc = await Restaurant.create(payload);
+  return doc.toObject();
 }
 
 async function getRestaurantById(id) {
   const doc = await Restaurant.findById(id);
   // 문서가 존재하면 toObject()를 호출하고, 없으면 null을 반환합니다.
   return doc ? doc.toObject() : null;
-}
-
-async function createRestaurant(payload) {
-  const doc = await Restaurant.create(payload);
-  return doc.toObject();
 }
 
 async function updateRestaurant(id, payload) {
