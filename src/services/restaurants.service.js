@@ -16,7 +16,9 @@ async function getRestaurantById(id) {
 }
 
 async function createRestaurant(payload) {
+  // Mongoose의 create 함수는 유효성 검사를 자동으로 처리합니다.
   const doc = await Restaurant.create(payload);
+  // .toObject()를 호출하여 스키마의 transform 옵션(id 필드 생성 등)을 적용합니다.
   return doc.toObject();
 }
 

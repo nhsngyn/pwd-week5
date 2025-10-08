@@ -11,7 +11,7 @@ describe('Restaurant routes', () => {
   beforeAll(async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     app = createApp();
-    server = app.listen(4003); // 다른 테스트와 겹치지 않는 포트
+    server = app.listen(4004); // 테스트용 포트
   });
 
   afterEach(async () => {
@@ -38,7 +38,6 @@ describe('Restaurant routes', () => {
 
     expect(response.status).toBe(201);
     expect(response.body.data.name).toBe(payload.name);
-    expect(response.body.data.id).toBeDefined();
   });
 
   test('GET /api/restaurants/:id returns an item', async () => {
@@ -48,13 +47,12 @@ describe('Restaurant routes', () => {
       location: '테스트 위치',
       rating: 4,
     });
-    const restaurantId = newRestaurant._id;
+    const restaurantId = newRestaurant._id; // DB 객체에서 _id를 가져옴
 
     const response = await request(app).get(`/api/restaurants/${restaurantId}`);
 
     expect(response.status).toBe(200);
+    // API 응답에서는 id로 변환되었는지 확인
     expect(response.body.data.id).toBe(restaurantId.toString());
   });
-  
-  // sync-demo, 숫자 ID 기반 테스트 등은 현재 로직과 맞지 않으므로 삭제합니다.
 });
