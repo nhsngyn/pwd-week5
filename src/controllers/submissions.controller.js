@@ -34,14 +34,7 @@ exports.create = asyncHandler(async (req, res) => {
     submitterEmail: req.body.submitterEmail ?? '',
     status: 'pending',
   };
-
-  const required = ['restaurantName', 'category', 'location'];
-  const missing = required.find((k) => !payload[k]);
-  if (missing) {
-    res.status(400).json({ error: { message: `'${missing}' is required` } });
-    return;
-  }
-
+  
   const created = await submissionsService.createSubmission(payload);
   res.status(201).json({ data: created });
 });

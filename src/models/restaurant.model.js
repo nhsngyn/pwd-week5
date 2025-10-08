@@ -3,9 +3,6 @@ const mongoose = require('mongoose');
 
 const RestaurantSchema = new mongoose.Schema(
   {
-    // Mongoose는 데이터를 생성할 때 자동으로 고유한 _id 필드를 만들어줍니다. 
-    // 따라서 사용자가 직접 id를 스키마에 추가하고 필수로 설정하면, 
-    // id 값을 주지 않고 데이터를 만들려고 할 때마다 유효성 검사 오류가 발생합니다.
     name: { type: String, required: true, index: true },
     category: { type: String, required: true, index: true },
     location: { type: String, required: true },

@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 
 const SubmissionSchema = new mongoose.Schema(
   {
-    id: { type: Number, required: true, unique: true, index: true },
     restaurantName: { type: String, required: true, index: true },
     category: { type: String, required: true, index: true },
     location: { type: String, required: true },
@@ -18,16 +17,20 @@ const SubmissionSchema = new mongoose.Schema(
     timestamps: true,
     versionKey: false,
     toObject: {
+      virtuals: true, // virtual 필드를 포함시키기 위해 true로 설정
       transform: (_doc, ret) => {
-        delete ret._id;
+        ret.id = ret._id; // _id를 id로 복사
+        delete ret._id;   // 원본 _id는 삭제
         return ret;
-      }
+      },
     },
     toJSON: {
+     virtuals: true, // virtual 필드를 포함시키기 위해 true로 설정
       transform: (_doc, ret) => {
-        delete ret._id;
+        ret.id = ret._id; // _id를 id로 복사
+        delete ret._id;   // 원본 _id는 삭제
         return ret;
-      }
+      },
     }
   }
 );
