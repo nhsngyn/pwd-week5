@@ -5,8 +5,8 @@ const Restaurant = require('../models/restaurant.model');
 
 async function getAllRestaurants() {
   const docs = await Restaurant.find({});
-  // .map(doc => doc.toObject())를 추가하여 각 문서에 transform을 적용합니다.
-  return docs.map(doc => doc.toObject());
+  // 각 문서에 transform을 적용하여 'id' 필드를 갖게 합니다.
+  return docs.map((doc) => doc.toObject());
 }
 
 async function getRestaurantById(id) {
@@ -16,9 +16,7 @@ async function getRestaurantById(id) {
 }
 
 async function createRestaurant(payload) {
-  // Mongoose의 create 함수는 유효성 검사를 자동으로 처리합니다.
   const doc = await Restaurant.create(payload);
-  // .toObject()를 호출하여 스키마의 transform 옵션(id 필드 생성 등)을 적용합니다.
   return doc.toObject();
 }
 
