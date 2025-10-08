@@ -37,22 +37,25 @@ describe('RestaurantService', () => {
   });
 
   test('createRestaurant appends a new entry', async () => {
-    const payload = {
-      name: '테스트 식당',
-      category: '테스트',
-      location: '가상 캠퍼스',
-      rating: 4.5,
-    };
+  const payload = {
+    name: '테스트 식당',
+    category: '테스트',
+    location: '가상 캠퍼스',
+    rating: 4.5,
+  };
 
-    const created = await restaurantService.createRestaurant(payload);
+  const created = await restaurantService.createRestaurant(payload);
 
-    expect(created.id).toBeDefined();
-    expect(created.name).toBe(payload.name);
+  expect(created.id).toBeDefined();
+  expect(created.name).toBe(payload.name);
 
-    const all = await restaurantService.getAllRestaurants();
-    const found = all.find((item) => item.id === created.id);
-    expect(found).toBeTruthy();
-  });
+  const all = await restaurantService.getAllRestaurants();
+
+  // 👇 .toString()을 사용해 두 id를 문자열로 바꿔서 비교합니다.
+  const found = all.find((item) => item.id.toString() === created.id.toString());
+  
+  expect(found).toBeTruthy();
+});
 
   test('createRestaurant rejects invalid payloads', async () => {
     // Mongoose가 반환하는 실제 에러 메시지와 일치시킵니다.
@@ -60,13 +63,4 @@ describe('RestaurantService', () => {
       restaurantService.createRestaurant({ name: '누락된 식당' })
     ).rejects.toThrow('Restaurant validation failed: location: Path `location` is required., category: Path `category` is required.');
   });
-  
-  // `getAllRestaurantsSync`는 DB 기반 로직과 맞지 않으므로 주석 처리하거나 삭제합니다.
-  /*
-  test('getAllRestaurantsSync returns data immediately', () => {
-    const restaurants = restaurantService.getAllRestaurantsSync();
-    expect(Array.isArray(restaurants)).toBe(true);
-    expect(restaurants.length).toBeGreaterThan(0);
-  });
-  */
 });
